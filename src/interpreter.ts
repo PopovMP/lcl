@@ -84,25 +84,25 @@ class Interpreter {
     private callProc(expr: any[], env: any[]): any {
         const proc: string | any[] = expr[0];
         const isNamed: boolean = typeof proc === "string";
-        const closure: any[] | string = isNamed ? this.lookup(<string>proc, env) : this.evalExpr(proc, env);
+        const lambda: any[] | string = isNamed ? this.lookup(<string>proc, env) : this.evalExpr(proc, env);
 
-        if (typeof closure === "string") {
+        if (typeof lambda === "string") {
             const newExpr = expr.slice();
-            newExpr[0] = closure;
+            newExpr[0] = lambda;
             return this.evalExpr(newExpr, env);
         }
 
-        if (!Array.isArray(closure)) {
-            throw `Error: Improper function: ${closure}`;
+        if (!Array.isArray(lambda)) {
+            throw `Error: Improper function: ${lambda}`;
         }
 
         const args: any[] = expr.length === 1 ? [] : expr.length === 2
             ? [this.evalExpr(expr[1], env)]
             : this.mapExprLst(expr.slice(1), env);
 
-        const closureEnv: any[] = this.makeProcEnv(closure[1], args, closure[3]);
+        const closureEnv: any[] = this.makeProcEnv(lambda[1], args, lambda[3]);
 
-        return this.evalExpr(closure[2], closureEnv);
+        return this.evalExpr(lambda[2], closureEnv);
     }
 
     private makeProcEnv(params: string | string[], args: any[], env: any[]): any[] {
@@ -119,11 +119,20 @@ class Interpreter {
         return closureEnv;
     }
 
-    // [lambda, [par1, par2, ...], expr]
+    // [λ, par1, par2, ..., ., expr]
     private evalLambda(expr: any[], env: any[]): any[] {
-        if (expr.length !== 3) throw "Error: Improper function";
+        const lambdaIndex: number = expr.indexOf("λ");
+        const dotIndex: number = expr.indexOf(".");
 
-        return ["closure", expr[1], expr[2], env];
+        if (lambdaIndex !== 0) throw "Error: The notation doesn't start with 'λ'.";
+        if (dotIndex === -1) throw "Error: There is no . in the lambda notation.";
+        if (dotIndex === 1) throw "Error: The lambda notation has no parameters.";
+        if (dotIndex === expr.length - 1) throw "Error: The lambda notation has no expression.";
+
+        const params: any[] = expr.slice(1, dotIndex);
+        const body: any[] = expr.slice(dotIndex + 1);
+
+        return ["lambda", params, body, env];
     }
 
     // [let, symbol, expr]
@@ -137,13 +146,13 @@ class Interpreter {
         return value;
     }
 
-    // [let, symbol, expr]
-    // [let, symbol, [lambda, [par1, par2, ...], expr]]
+    // [let, symbol, λ...]
+    // [let, symbol, application]
     private evalLetValue(expr: any[], env: any[]): any {
         const letExpr: any = expr[2];
 
-        const res: any = (Array.isArray(letExpr) && letExpr[0] === "lambda")
-            ? this.evalLambda(["lambda", letExpr[1], letExpr[2]], env)
+        const res: any = (Array.isArray(letExpr) && letExpr[0] === "λ")
+            ? this.evalLambda(expr.slice(2), env)
             : this.evalExpr(letExpr, env);
 
         return res;
@@ -199,7 +208,7 @@ class Interpreter {
             }
 
             if (Array.isArray(entity)) {
-                if (entity[0] === "closure") {
+                if (entity[0] === "lambda") {
                     return "{lambda (" + entity[1].join(" ") + ") (" + bodyToString(entity[2]) + ")}";
                 } else {
                     return entity.join(" ");
