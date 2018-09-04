@@ -1,0 +1,19 @@
+{
+  "name": "lcl",
+  "version": "0.0.1",
+  "description": "Lambda Calculus Language",
+  "main": "lcl.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git"
+  },
+  "keywords": [
+    "lambda",
+    "calculus"
+  ],
+  "author": "Miroslav Popov",
+  "license": "MIT"
+}
