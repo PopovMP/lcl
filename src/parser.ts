@@ -6,7 +6,7 @@ class Parser {
     private openParenChars: string[] = ["(", "[", "{"];
     private closeParenChars: string[] = [")", "]", "}"];
     private whiteSpaceChars: string[] = [" ", "\t"];
-    private endOfLineChars: string[] = ["\r", "\n"];
+    private endOfLineChars: string[] = ["\n"];
     private commentStartChars: string[] = [";"];
 
     public parse(codeText: string): any[] {
@@ -15,15 +15,21 @@ class Parser {
         return ilTree;
     }
 
-    public tokenize(code: string): any[] {
-        const lexList: any[] = [];
+    public tokenize(codeText: string): any[] {
+        const code: string = codeText.replace(/[\r\n]+/g, "\n").replace(/[ \t]+/g, " ");
+        const lexList: any[] = ["("];
 
         const pushSymbol = (symbol: string): void => {
             if (symbol === "") return;
             lexList.push(symbol);
         };
 
-        for (let i = 0, symbol = ""; i < code.length; i++) {
+        for (let i = 0, symbol: string = ""; i <= code.length; i++) {
+            if (i === code.length) {
+                lexList.push(")");
+                break;
+            }
+
             const ch = code[i];
 
             if (ch === '"') {
@@ -45,6 +51,7 @@ class Parser {
             }
 
             if (this.isLineComment(ch)) {
+                lexList.push(")");
                 for (; i < code.length; i++) {
                     const c = code[i];
                     if (this.isEndOfLine(c)) {
@@ -54,7 +61,14 @@ class Parser {
                 continue;
             }
 
-            if (this.isParen(ch) || this.isLambda(ch) || this.isDotChar(ch)) {
+            if (this.isParen(ch)) {
+                pushSymbol(symbol);
+                symbol = "";
+                lexList.push(ch);
+                continue;
+            }
+
+            if (this.isLambda(ch) || this.isDotChar(ch)) {
                 pushSymbol(symbol);
                 symbol = "";
                 lexList.push(ch);
@@ -64,6 +78,12 @@ class Parser {
             if (this.isWhiteSpace(ch)) {
                 pushSymbol(symbol);
                 symbol = "";
+                continue;
+            }
+
+            if (this.isEndOfLine(ch)) {
+                lexList.push(")");
+                lexList.push("(");
                 continue;
             }
 
