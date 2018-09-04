@@ -3,17 +3,24 @@
   "version": "0.0.1",
   "description": "Lambda Calculus Language",
   "main": "lcl.js",
-  "scripts": {
-    "test": "test"
-  },
   "repository": {
     "type": "git",
-    "url": "git"
+    "url": "https://github.com/PopovMP/lcl"
+  },
+  "devDependencies": {
+    "@types/node": "^10.9.1",
+    "mocha": "^5.2.0",
+    "typescript": "^3.0.1"
   },
   "keywords": [
-    "lambda",
-    "calculus"
+    "lambda calculus",
+    "programming language"
   ],
+  "homepage": "https://lcl.forexsb.com",
   "author": "Miroslav Popov",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "mocha"
+  }
 }

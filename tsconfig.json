@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "strict": true,
+    "outFile": "./lcl.js"
+  },
+  "include": [
+    "./src/**/*"
+  ]
+}
